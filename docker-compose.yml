@@ -1,0 +1,23 @@
+services:
+  localstack:
+    image: localstack/localstack
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3,dynamodb
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./localstack-init:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  imageservice:
+    build: .
+    container_name: imageservice
+    ports:
+      - "5000:5000"        # 👈 EXPOSE imageservice API
+    depends_on:
+      localstack:
+        condition: service_started
+    environment:
+      LOCALSTACK_ENDPOINT: http://localstack:4566
